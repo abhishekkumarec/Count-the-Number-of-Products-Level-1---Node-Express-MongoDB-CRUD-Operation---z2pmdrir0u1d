@@ -30,9 +30,31 @@ app.get("/",async function(req,res){
 
     //Write you code here
     //update count variable 
+    try {
+    const query = {};
+    if (req.query.category) {
+      query.category = req.query.category;
+    }
 
+    if (req.query.range) {
+      const priceRange = req.query.range.split("-");
+
+      if (priceRange.length === 2) {
+        query.price = {
+          $gte: parseInt(priceRange[0]),
+          $lte: parseInt(priceRange[1]),
+        };
+      } else if (priceRange.length === 1) {
+        query.price = { $gte: parseInt(priceRange[0]) };
+      }
+    }
+
+    count = await products.countDocuments(query);
     res.send(JSON.stringify(count));
-
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal server error");
+  }
 });
 
 module.exports = app;
